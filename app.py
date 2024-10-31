@@ -1,55 +1,58 @@
-# -*- coding: utf-8 -*-
-import sys
-import os
 import tensorflow as tf
-from tensorflow.keras.models import load_model
-from tensorflow.keras.preprocessing.image import load_img, img_to_array
-import numpy as np
+from tensorflow import keras
+from tensorflow.keras.models import  load_model
+import streamlit as st
+import numpy as np 
 
-# Set UTF-8 encoding for stdout to handle Unicode characters
-sys.stdout.reconfigure(encoding='utf-8')
+st.header('Image Classification Model')
+model = load_model('D:\Projects\Image_Classification\Image_classify.keras')
+data_cat = ['apple',
+ 'banana',
+ 'beetroot',
+ 'bell pepper',
+ 'cabbage',
+ 'capsicum',
+ 'carrot',
+ 'cauliflower',
+ 'chilli pepper',
+ 'corn',
+ 'cucumber',
+ 'eggplant',
+ 'garlic',
+ 'ginger',
+ 'grapes',
+ 'jalepeno',
+ 'kiwi',
+ 'lemon',
+ 'lettuce',
+ 'mango',
+ 'onion',
+ 'orange',
+ 'paprika',
+ 'pear',
+ 'peas',
+ 'pineapple',
+ 'pomegranate',
+ 'potato',
+ 'raddish',
+ 'soy beans',
+ 'spinach',
+ 'sweetcorn',
+ 'sweetpotato',
+ 'tomato',
+ 'turnip',
+ 'watermelon']
+img_height = 180
+img_width = 180
+image =st.text_input('Enter Image name','Apple.jpg')
 
-# Define the path to your model
-model_path = 'd:/Projects/Image_Classification/my_model.h5'  # Update this path as needed
+image_load = tf.keras.utils.load_img(image, target_size=(img_height,img_width))
+img_arr = tf.keras.utils.array_to_img(image_load)
+img_bat=tf.expand_dims(img_arr,0)
 
-# Check if the model file exists
-if os.path.exists(model_path):
-    # Load the model
-    model = load_model(model_path)
-    print("Model loaded successfully.")
-else:
-    print(f"Model file not found at {model_path}. Please check the path.")
-    exit(1)  # Exit the script if the model file is missing
+predict = model.predict(img_bat)
 
-# Function to load and preprocess the image
-def load_and_prepare_image(image_path, target_size=(224, 224)):  # Adjust target size as needed
-    img = load_img(image_path, target_size=target_size)
-    img_arr = img_to_array(img)
-    img_arr = np.expand_dims(img_arr, axis=0)  # Make it batch-like
-    img_arr = img_arr / 255.0  # Normalize if required by your model
-    return img_arr
-
-# Define the path to the image you want to classify
-image_path = 'd:/Projects/Image_Classification/sample_image.jpg'  # Replace with the actual image path
-
-# Check if the image file exists
-if os.path.exists(image_path):
-    # Load and prepare the image
-    img_arr = load_and_prepare_image(image_path)
-else:
-    print(f"Image file not found at {image_path}. Please check the path.")
-    exit(1)  # Exit the script if the image file is missing
-
-# Perform prediction
-try:
-    prediction = model.predict(img_arr)
-    
-    # Process and print the prediction
-    prediction_str = prediction.decode('utf-8') if isinstance(prediction, bytes) else str(prediction)
-    print("Prediction:", prediction_str)
-
-except UnicodeEncodeError as e:
-    print("Unicode encoding error occurred:", e)
-
-except Exception as e:
-    print("An error occurred during prediction:", e)
+score = tf.nn.softmax(predict)
+st.image(image, width=200)
+st.write('Veg/Fruit in image is ' + data_cat[np.argmax(score)])
+st.write('With accuracy of ' + str(np.max(score)*100))
